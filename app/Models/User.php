@@ -28,10 +28,6 @@ class User extends Model implements Authenticatable
         'balance'
     ];
 
-    public function purchases(): HasMany
-    {
-        return $this->hasMany(purchases::class, 'user_id', 'user_id');
-    }
 
     public function getAuthIdentifierName()
     {

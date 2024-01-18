@@ -23,9 +23,11 @@ return new class extends Migration
         $table->string('street_address');
         $table->string('zip_code');
         $table->string('ktp_number')->unique();
-        $table->string('current_position');
+        $table->unsignedBigInteger('position_id');
         $table->unsignedBigInteger('bank_id');
         $table->string('bank_account_number');
+        $table->string('image_path')->nullable();
+        $table->foreign('position_id')->references('id')->on('positions');
         $table->foreign('province_id')->references('id')->on('provinces');
         $table->foreign('city_id')->references('id')->on('cities');
         $table->foreign('bank_id')->references('id')->on('banks');
