@@ -9,7 +9,7 @@ class ResponseHelper
     {
 
         return response()->json([
-            'cede' => $status,
+            'code' => $status,
             'status' => $message,
             'data' => $data['value'],
             'error' => '',

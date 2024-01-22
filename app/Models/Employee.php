@@ -33,6 +33,21 @@ class Employee extends Model
 
     public function province()
     {
-        return $this->belongsTo(Province::class, 'id', 'province_id');
+        return $this->belongsTo(Province::class, 'province_id', 'id');
+    }
+
+    public function city()
+    {
+        return $this->belongsTo(city::class, 'city_id', 'id');
+    }
+
+    public function bank()
+    {
+        return $this->belongsTo(bank::class, 'bank_id', 'id');
+    }
+
+    public function position()
+    {
+        return $this->belongsTo(position::class, 'position_id', 'id');
     }
 }

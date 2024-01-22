@@ -18,11 +18,11 @@ class EmployeeController extends Controller
     {
 
         $data = $request->validated();
-
         if ($request->hasFile('image_path')) {
             $imagePath = $request->file('image_path')->store('images', 'public');
-            $data['image_path'] = $imagePath;
+            $data['image_path'] = 'storage/' . $imagePath;
         }
+
 
         $employee = new Employee($data);
         $employee->save();
@@ -33,6 +33,8 @@ class EmployeeController extends Controller
 
     public function update(int $id, EmployeeUpdateRequest $request): JsonResponse
     {
+
+
 
         $Employee = Employee::where('id', $id)->first();
         if(!$Employee){
@@ -51,6 +53,8 @@ class EmployeeController extends Controller
             $imagePath = $request->file('image_path')->store('images', 'public');
             $data['image_path'] = $imagePath;
         }
+
+
         $Employee->fill($data);
         $Employee->save();
 
@@ -100,6 +104,9 @@ class EmployeeController extends Controller
         $status = 200;
         $employeeQuery = Employee::query();
 
+        $employeeQuery->with(['city:id,cities_name', 'province:id,provinces_name', 'bank:id,bank_name', 'position:id,positions_name']);
+
+
         // Apply filters
         $employeeQuery->when($filter, function ($query) use ($filter) {
             foreach ($filter as $field => $value) {
@@ -110,22 +117,39 @@ class EmployeeController extends Controller
         });
 
         // Paginate the results
-        $perPage = $request->input('per_page', 10); // You can adjust the per page count
-        $users = $employeeQuery->paginate($perPage);
+        $perPage = $request->input('per_page', 50);
+        $employees = $employeeQuery->paginate($perPage);
+
+        $transformedData = array_map(function ($employee) {
+
+            $employeeArray = $employee->toArray();
+            $employeeArray['date_of_birth'] = date('d-m-Y', strtotime($employee->date_of_birth));
+            $employeeArray['cities_name'] = $employee->city->cities_name;
+            $employeeArray['provinces_name'] = $employee->province->provinces_name;
+            $employeeArray['bank_name'] = $employee->bank->bank_name;
+            $employeeArray['positions_name'] = $employee->position->positions_name;
+            unset($employeeArray['city']);
+            unset($employeeArray['province']);
+            unset($employeeArray['bank']);
+            unset($employeeArray['position']);
+            return $employeeArray;
+        }, $employees->items());
+
 
         // Extract next page URL
-        $nextPageUrl = $users->nextPageUrl();
-        $total = $users->total();
-        if($total == 0){
+        $nextPageUrl = $employees->nextPageUrl();
+        $total = $employees->total();
+        if ($total == 0) {
             $message = "Data Not Found";
             $status = 404;
         }
+
         // Include next page URL in the response
         $response = [
-            'value' => $users->items(),
+            'value' => $transformedData,
             'paging' => [
                 'next_page_url' => $nextPageUrl,
-                'current_page' => $users->currentPage(),
+                'current_page' => $employees->currentPage(),
                 'per_page' => $perPage,
                 'total' => $total
             ]

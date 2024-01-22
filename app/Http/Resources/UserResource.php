@@ -14,6 +14,7 @@ class UserResource extends JsonResource
      */
     public function toArray($request): array
     {
+
         return [
             'code' => 200,
             'success' => true,
